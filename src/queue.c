@@ -1,5 +1,5 @@
 #include "../include/queue.h"
-#include "../include/process.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 queue_t *init_queue() {
@@ -12,7 +12,7 @@ queue_t *init_queue() {
   return q;
 }
 
-void enqueue(queue_t *queue, process_t *item) {
+void enqueue(queue_t *queue, void **item) {
   node_t *new_node = (node_t *)malloc(sizeof(node_t));
 
   new_node->item = *item;
@@ -30,18 +30,15 @@ void enqueue(queue_t *queue, process_t *item) {
   ++queue->count;
 }
 
-process_t *dequeue(queue_t *queue) {
+void *dequeue(queue_t *queue) {
   if (queue->head == NULL) {
     return NULL;
   }
 
-  process_t *proc = (process_t *)malloc(sizeof(process_t));
-  *proc = queue->head->item;
-
-  void *temp = queue->head;
+  void *item = queue->head->item;
+  node_t *temp = queue->head;
   queue->head = queue->head->next;
-
   free(temp);
 
-  return proc;
+  return item;
 }

@@ -1,9 +1,8 @@
 #ifndef QUEUE_H
 #define QUEUE_H
-#include "process.h"
 
 typedef struct node {
-  process_t item;
+  void **item;
   struct node *next;
 } node_t;
 
@@ -14,7 +13,7 @@ typedef struct queue {
 } queue_t;
 
 queue_t *init_queue();
-void enqueue(queue_t *queue, process_t *item);
-process_t *dequeue(queue_t *queue);
+void enqueue(queue_t *queue, void **item);
+void *dequeue(queue_t *queue);
 
 #endif // !QUEUE_H

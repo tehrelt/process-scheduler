@@ -7,7 +7,7 @@ void print_queue(queue_t *q) {
   node_t *p = q->head;
 
   while (p != NULL) {
-    printf("%d->", p->item.pid);
+    printf("%d->", ((process_t *)(p->item))->pid);
     p = p->next;
   }
   printf("NULL\n");
@@ -23,19 +23,23 @@ int main(int argc, char **argv) {
 
   for (int i = 0; i < 5; ++i) {
     process_t *proc = process_create(i);
-    enqueue(q, proc);
+    enqueue(q, (void **)&proc);
     print_queue(q);
   }
 
-  process_t *proc = dequeue(q);
+  process_t *proc;
+  proc = (process_t *)dequeue(q);
   printf("dequeued pid: %d\n", proc->pid);
   print_queue(q);
-  proc = dequeue(q);
-  printf("dequeued pid: %d\n", proc->pid);
-  print_queue(q);
-  proc = dequeue(q);
+  proc = (process_t *)dequeue(q);
   printf("dequeued pid: %d\n", proc->pid);
   print_queue(q);
 
-  ;
+  proc = (process_t *)dequeue(q);
+  printf("dequeued pid: %d\n", proc->pid);
+  print_queue(q);
+
+  proc = (process_t *)dequeue(q);
+  printf("dequeued pid: %d\n", proc->pid);
+  print_queue(q);
 }
