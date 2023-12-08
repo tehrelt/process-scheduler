@@ -15,6 +15,6 @@ typedef struct queue {
 
 queue_t *init_queue();
 void enqueue(queue_t *queue, process_t *item);
-void dequeue(queue_t *queue);
+process_t *dequeue(queue_t *queue);
 
 #endif // !QUEUE_H

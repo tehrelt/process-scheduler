@@ -29,3 +29,19 @@ void enqueue(queue_t *queue, process_t *item) {
 
   ++queue->count;
 }
+
+process_t *dequeue(queue_t *queue) {
+  if (queue->head == NULL) {
+    return NULL;
+  }
+
+  process_t *proc = (process_t *)malloc(sizeof(process_t));
+  *proc = queue->head->item;
+
+  void *temp = queue->head;
+  queue->head = queue->head->next;
+
+  free(temp);
+
+  return proc;
+}

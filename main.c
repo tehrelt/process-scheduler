@@ -26,4 +26,16 @@ int main(int argc, char **argv) {
     enqueue(q, proc);
     print_queue(q);
   }
+
+  process_t *proc = dequeue(q);
+  printf("dequeued pid: %d\n", proc->pid);
+  print_queue(q);
+  proc = dequeue(q);
+  printf("dequeued pid: %d\n", proc->pid);
+  print_queue(q);
+  proc = dequeue(q);
+  printf("dequeued pid: %d\n", proc->pid);
+  print_queue(q);
+
+  ;
 }
