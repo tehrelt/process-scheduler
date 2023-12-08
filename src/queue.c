@@ -1,8 +1,10 @@
 #include "../include/queue.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 
 queue_t *init_queue() {
+  // printf("Allocating memory for queue\n");
   queue_t *q = (queue_t *)malloc(sizeof(queue_t));
 
   q->head = NULL;
@@ -40,5 +42,22 @@ void *dequeue(queue_t *queue) {
   queue->head = queue->head->next;
   free(temp);
 
+  --queue->count;
+
   return item;
+}
+
+void *peek(queue_t *queue, int index) {
+
+  if (index < 0 && index >= queue->count) {
+    return NULL;
+  }
+
+  node_t *p = queue->head;
+
+  for (int i = 0; i < index; i++) {
+    p = p->next;
+  }
+
+  return p->item;
 }

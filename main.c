@@ -1,7 +1,10 @@
 #include "include/process.h"
 #include "include/queue.h"
+#include "include/scheduler.h"
+#include "include/tools.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 void print_queue(queue_t *q) {
   node_t *p = q->head;
@@ -19,27 +22,15 @@ int main(int argc, char **argv) {
   //   exit(EXIT_FAILURE);
   // }
 
-  queue_t *q = init_queue();
+  struct timespec ts;
+  timespec_get(&ts, TIME_UTC);
+  srand((unsigned)ts.tv_nsec);
 
-  for (int i = 0; i < 5; ++i) {
-    process_t *proc = process_create(i);
-    enqueue(q, (void **)&proc);
-    print_queue(q);
-  }
+  scheduler_t *scheduler = init_scheduler();
 
-  process_t *proc;
-  proc = (process_t *)dequeue(q);
-  printf("dequeued pid: %d\n", proc->pid);
-  print_queue(q);
-  proc = (process_t *)dequeue(q);
-  printf("dequeued pid: %d\n", proc->pid);
-  print_queue(q);
+  queue_t *q = scheduler->processes_q;
 
-  proc = (process_t *)dequeue(q);
-  printf("dequeued pid: %d\n", proc->pid);
-  print_queue(q);
+  generate_processes(scheduler, 20);
 
-  proc = (process_t *)dequeue(q);
-  printf("dequeued pid: %d\n", proc->pid);
-  print_queue(q);
+  printf("Total burst: %d\n", total_burst(scheduler));
 }
