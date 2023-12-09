@@ -12,6 +12,10 @@ scheduler_t *init_scheduler(int quantum) {
   // printf("Initializing queue in scheduler\n");
   sch->queues_q = init_queue();
   sch->processes_q = init_queue();
+
+  queue_t *fcfs = init_queue();
+  enqueue(sch->queues_q, (void **)&fcfs);
+
   return sch;
 }
 
@@ -32,9 +36,9 @@ void generate_processes(scheduler_t *s, int count, int max_burst) {
     process_t *proc = process_create(processes_count++);
     proc->burst = rand_int(1, max_burst);
     proc->remaining_time = proc->burst;
-    // printf("generated process: %d\tburst: %d\n", proc->pid, proc->burst);
     proc->priority = 0;
-    proc->status = READY;
+    proc->status = PROC_READY;
+
     enqueue(s->processes_q, (void **)&proc);
   }
 }

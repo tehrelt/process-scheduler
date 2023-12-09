@@ -6,6 +6,7 @@ typedef struct scheduler {
   int quantum;
   queue_t *processes_q;
   queue_t *queues_q;
+
 } scheduler_t;
 
 scheduler_t *init_scheduler(int quantum);

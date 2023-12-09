@@ -23,6 +23,7 @@ void enqueue(queue_t *queue, void **item) {
   if (queue->head == NULL) {
     queue->head = new_node;
     queue->tail = new_node;
+    ++queue->count;
     return;
   }
 
