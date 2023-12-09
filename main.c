@@ -160,7 +160,7 @@ void print_tick(int tick) {
     fread(&proc, sizeof(process_t), 1, fd);
     printf("%d\t%d\t%d\t%d\t%s\n", proc.pid, proc.priority, proc.burst,
            proc.remaining_time,
-           proc.status == PROC_RUNNING     ? "R"
+           proc.status == PROC_RUNNING     ? "RU"
            : proc.status == PROC_WAITING   ? "W"
            : proc.status == PROC_COMPLETED ? "C"
                                            : "RD");
@@ -168,74 +168,77 @@ void print_tick(int tick) {
 }
 
 void run(scheduler_t *scheduler) {
+
   int queue_count = 3;
-  for (int i = 0; i < queue_count; ++i) {
-    printf("enqueue a queue\n");
+  int queue_n = 3;
+  for (int i = 0; i < queue_count; i++) {
     queue_t *q = init_queue();
+    sch_queue_t sq;
+    sq.queue = q;
+    sq.type = i == queue_count - 1 ? SCH_Q_FCFS : SCH_Q_RR;
     enqueue(scheduler->queues_q, (void **)&q);
   }
-  printf("\n");
-
-  queue_t *q = (queue_t *)(node_t *)(scheduler->queues_q->head)->item;
-  for (node_t *node = scheduler->processes_q->head; node != NULL;
-       node = node->next) {
-    printf("enqueue a proc(%d) to queue\n", ((process_t *)node->item)->pid);
-    process_t *proc = (process_t *)node->item;
-    enqueue(q, (void **)&proc);
-  }
-  printf("\n");
-
   int tick = 0;
-  write_to_file(scheduler, tick++);
-  int queue_i = 0;
+  for (node_t *p = scheduler->processes_q->head; p != NULL; p = p->next) {
+    process_t *proc = (process_t *)p->item;
+    enqueue((queue_t *)scheduler->queues_q->head->item, (void **)&proc);
+  }
+
+  // write_to_file(scheduler, tick++);
   while (scheduler->queues_q->count != 0) {
-    queue_t *q = dequeue(scheduler->queues_q);
-    printf("\ndequeued queue with %d elements head: %d\n", q->count,
-           ((process_t *)q->head->item)->pid);
-    for (int queue_quantum = scheduler->quantum * (++queue_i % queue_count);
-         queue_quantum != 0; --queue_quantum) {
-      process_t *proc = (process_t *)dequeue(q);
-      printf("dequeued process: %d\n", proc->pid);
-      int current_quantum = scheduler->quantum;
-      while (current_quantum != 0) {
-        if (proc->priority == 2) {
-          printf("executing fcfs on pid=%d\t", proc->pid);
-          fcfs_do_tick(proc);
-          printf("executed fcfs rt=%d\n", proc->remaining_time);
-          if (proc->status == PROC_COMPLETED) {
-            current_quantum = 0;
-          }
-        } else {
-          printf("executing rr on q=%d pid=%d\t", current_quantum, proc->pid);
-          rr_do_tick(proc, --current_quantum);
-          printf("rr executed pri = %d\n", proc->priority);
-          if (proc->status == PROC_COMPLETED) {
-            current_quantum = 0;
+    sch_queue_t *sq = (sch_queue_t *)dequeue(scheduler->queues_q);
+    printf("dequeued a queue queues count = %d\n", scheduler->queues_q->count);
+    if (sq->type == SCH_Q_RR) {
+      printf("\nround-robin queue action\n");
+      for (int i = pow(2, queue_n); i != 0;) {
+        process_t *proc = dequeue(sq->queue);
+        printf("rr q count: %d\n", q->count);
+        if (proc == NULL) {
+          break;
+        }
+
+        for (int j = scheduler->quantum; j != 0 && proc->remaining_time > 0;
+             --j) {
+          proc->status = PROC_RUNNING;
+
+          --proc->remaining_time;
+          --i;
+
+          write_to_file(scheduler, tick++);
+          if (proc->remaining_time <= 0) {
+            proc->status = PROC_COMPLETED;
+          } else {
+            proc->status = PROC_READY;
           }
         }
-        write_to_file(scheduler, tick++);
-        printf("logged\n");
-      }
 
-      if (proc->status != PROC_COMPLETED) {
-        enqueue(scheduler->queues_q->head->item, (void **)&proc);
-        printf("proc(%d) enqueued to next queue\n", proc->pid);
+        if (proc->status != PROC_COMPLETED) {
+          ++proc->priority;
+          enqueue(((sch_queue_t *)scheduler->queues_q->head->item)->queue,
+                  (void **)&proc);
+        }
       }
-
-      if (q->count == 0) {
-        break;
-      }
-    }
-    if (q->count == 0) {
-      printf("queue is empty\n");
-      free(q);
-      break;
+      printf("enqueue a q again q->count: %d\n", q->count);
+      enqueue(scheduler->queues_q, (void **)&sq);
     } else {
-      printf("enqeue q\n");
+      printf("\nfcfs action\n");
+      for (process_t *proc = dequeue(q); proc != NULL; proc = dequeue(q)) {
+        while (proc->status != PROC_COMPLETED) {
+          proc->status = PROC_RUNNING;
+
+          --proc->remaining_time;
+          write_to_file(scheduler, tick++);
+          if (proc->remaining_time <= 0) {
+            proc->status = PROC_COMPLETED;
+          }
+        }
+      }
       enqueue(scheduler->queues_q, (void **)&q);
-      printf("enqueued q\n");
     }
+    printf("change queue on %d tick\n", tick);
+    queue_n++;
   }
+  write_to_file(scheduler, tick++);
 }
 
 void open_viewer(scheduler_t *scheduler) {
