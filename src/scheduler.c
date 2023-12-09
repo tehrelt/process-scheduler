@@ -13,9 +13,6 @@ scheduler_t *init_scheduler(int quantum) {
   sch->queues_q = init_queue();
   sch->processes_q = init_queue();
 
-  queue_t *fcfs = init_queue();
-  enqueue(sch->queues_q, (void **)&fcfs);
-
   return sch;
 }
 
