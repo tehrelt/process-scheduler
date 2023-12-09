@@ -158,7 +158,8 @@ void print_tick(int tick) {
 
   for (int i = 0; i < count; i++) {
     fread(&proc, sizeof(process_t), 1, fd);
-    printf("%d\t%d\t%d\n", proc.pid, proc.priority, proc.remaining_time);
+    printf("%d\t%d\t%d\t%d\n", proc.pid, proc.priority, proc.remaining_time,
+           proc.status);
   }
 }
 
@@ -171,6 +172,7 @@ void open_viewer(scheduler_t *scheduler) {
   int tick = 0;
   int view = 1;
   do {
+    system("clear");
     print_tick(tick);
     printf("(b) - back\t(n) - next\t(c) - close current tick: %d\n", tick);
     char ch;
